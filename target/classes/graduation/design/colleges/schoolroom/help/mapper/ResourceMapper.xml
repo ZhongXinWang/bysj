@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper
+	namespace="graduation.design.colleges.schoolroom.help.entity.ResourceMapper">
+	<resultMap type="graduation.design.colleges.schoolroom.help.entity.Resource"
+		id="resourceORM">
+		<id property="id" column="RESOURCE_ID" />  <!-- 递增字段 -->
+		<result property="resourceName" column="RESOURCE_NAME" />
+		<result property="ctype" column="CTYPE" />
+		<result property="url" column="URL" />
+		<result property="parentId" column="PARENT_ID" />
+		<result property="parentIds" column="PARENT_IDS" />
+		<result property="createTime" column="CREATE_TIME" />
+		<result property="createBy" column="CREATE_BY" />
+		<result property="orderNo" column="ORDER_NO" />
+		<result property="status" column="STATUS" />
+		<result property="icon" column="ICON"/>
+	</resultMap>
+	<!-- 配置和权限表之间的关联 -->
+	<resultMap
+		type="graduation.design.colleges.schoolroom.help.entity.PermResourceLink"
+		id="resourcePermORM" extends="resourceORM">
+		<id property="id" column="PERM_RESOUTCE_ID" />
+		<collection property="perm"
+			ofType="graduation.design.colleges.schoolroom.help.entity.Perm">
+			<id property="id" column="PERM_ID" />
+			<result property="permName" column="PERM_NAME" />
+			<result property="des" column="DES" />
+			<result property="createTime" column="CREATE_TIME" />
+			<result property="createBy" column="CREATE_BY" />
+			<result property="orderNo" column="ORDER_NO" />
+			<result property="status" column="STATUS" />
+		</collection>
+	</resultMap>
+
+
+	<!-- 获取所有的资源 -->
+	<select id="find" resultMap="resourceORM" parameterType="map">
+		SELECT *FROM sys_resource WHERE 1=1
+	</select>
+
+	<!-- 根据id获取资源 -->
+	<select id="select" resultMap="resourceORM" parameterType="string">
+		SELECT *FROM sys_resource WHERE RESOURCE_ID=#{id}
+	</select>
+	<!-- 获取对应的菜单 -->
+	<select id="findResource" resultMap="resourceORM" parameterType="map">
+
+		SELECT
+		res.`RESOURCE_ID`,res.`RESOURCE_NAME`,res.`CTYPE`,res.`URL`,res.`PARENT_ID`,res.`PARENT_IDS`,
+		res.`CREATE_TIME`,res.`CREATE_BY`,res.`ORDER_NO`,res.status,res.`icon`
+		FROM sys_perm p
+		LEFT JOIN sys_perm_resource pr ON p.`perm_ID`=pr.perm_id
+		LEFT JOIN sys_resource res ON res.resource_id=pr.resource_id
+		WHERE pr.`perm_id` IN 
+		<foreach collection="dataList" open="(" close=")" separator="," item="ids">
+		#{ids}
+		</foreach> 
+		<if test="ctypes != null">AND res.`CTYPE`=#{ctypes}</if>
+
+	</select>
+
+	<!-- 插入数据 -->
+	<insert id="insert"
+		parameterType="graduation.design.colleges.schoolroom.help.entity.Resource">
+
+		insert into
+		sys_resource(RESOURCE_NAME,CTYPE,URL,PARENT_ID,PARENT_IDS,CREATE_TIME,CREATE_BY,ORDER_NO,STATUS)
+		values
+		(#{resourceName},#{ctype},#{url},#{parentId},#{parentIds},#{createTime},#{createBy},#{orderNo},#{status})
+
+	</insert>
+
+	<!-- 更新操作 -->
+	<update id="update"
+		parameterType="graduation.design.colleges.schoolroom.help.entity.Resource">
+
+		update sys_resource set
+		<if test="resourceName != null">RESOURCE_NAME=#{resourceName},</if>
+		<if test="ctype != null">CTYPE=#{ctype},</if>
+		<if test="url != null">URL=#{url},</if>
+		<if test="parentId != null">PARENT_ID=#{parentId},</if>
+		<if test="parentIds != null">PARENT_IDS=#{parentIds},</if>
+		<if test="createTime != null">CREATE_TIME=#{createTime},</if>
+		<if test="createBy != null">CREATE_BY=#{createBy},</if>
+		<if test="orderNo != null">ORDER_NO=#{orderNo},</if>
+		<if test="status != null">STATUS=#{status},</if>
+		where RESOURCE_ID=#{id}
+	</update>
+
+	<!-- 删除一条 -->
+	<delete id="deleteById" parameterType="string">
+
+		delete from sys_resource where RESOURCE_ID=#{id}
+
+	</delete>
+	<!-- 删除多条 -->
+	<delete id="delete" parameterType="string">
+
+		delete from sys_resource where RESOURCE_ID in
+		<foreach collection="array" open="(" close=")" separator=","
+			item="id">
+
+			#{id}
+
+		</foreach>
+	</delete>
+</mapper>

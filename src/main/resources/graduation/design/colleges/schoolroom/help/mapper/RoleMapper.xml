@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="graduation.design.colleges.schoolroom.help.entity.RoleMapper">
+	<resultMap type="graduation.design.colleges.schoolroom.help.entity.Role"
+		id="roleORM">
+		<id property="id" column="ROLE_ID" />
+		<result property="roleName" column="ROLE_NAME" />
+		<result property="des" column="DES" />
+		<result property="createTime" column="CREATE_TIME" />
+		<result property="createBy" column="CREATE_BY" />
+		<result property="orderNo" column="ORDER_NO" />
+		<result property="status" column="STATUS" />
+	</resultMap>
+	<!-- 配置与user表直接的多对多关联 -->
+	<resultMap type="graduation.design.colleges.schoolroom.help.entity.UserRoleLink" id="roleUserORM" extends="roleORM">
+	<id property="id" column="USER_ROLE_ID" />
+	<collection property="user" ofType="graduation.design.colleges.schoolroom.help.entity.User">
+	<id property="id" column="USER_ID" />
+		<result property="userName" column="USER_NAME" />
+		<result property="email" column="EMAIL" />
+		<result property="mobile" column="MOBILE" />
+		<result property="password" column="PASSWORD" />
+		<result property="salt" column="SALT" />
+		<result property="ip" column="IP" />
+		<result property="createTime" column="CREATE_TIME" />
+		<result property="createBy" column="CREATE_BY" />
+		<result property="orderNo" column="ORDER_NO" />
+		<result property="status" column="STATUS" />
+	</collection>
+	</resultMap>
+	<!-- 配置和权限表之间的关联 -->
+	<resultMap type="graduation.design.colleges.schoolroom.help.entity.RolePermLink" id="rolePermORM" extends="roleORM">
+	<id property="id" column="ROLE_PERM_ID"/>
+	<collection property="perm" ofType="graduation.design.colleges.schoolroom.help.entity.Perm">
+		<id property="id" column="PERM_ID" />
+		<result property="permName" column="PERM_NAME" />
+		<result property="des" column="DES" />
+		<result property="createTime" column="CREATE_TIME" />
+		<result property="createBy" column="CREATE_BY" />
+		<result property="orderNo" column="ORDER_NO" />
+		<result property="status" column="STATUS" />
+	</collection>
+	</resultMap>
+	
+	<!-- 查询所有角色 -->
+	<select id="find" resultMap="roleORM"  parameterType="map">
+	SELECT *FROM sys_role WHERE 1=1
+	</select>
+	<!-- 获得一条 -->
+	<select id="get" resultMap="roleORM" parameterType="string">
+	
+	SELECT *FROM sys_role WHERE ROLE_ID=#{id}
+	
+	</select>
+	
+	<!-- 更加email获得角色信息的List -->
+	<select id="findRole" resultMap="roleORM" parameterType="string">
+	
+	SELECT r.`ROLE_NAME`,r.ROLE_ID,r.`CREATE_BY`,r.`CREATE_TIME`,r.`DES`,r.`ORDER_NO`,r.`STATUS` FROM sys_user u 
+    LEFT JOIN  sys_user_role ur ON ur.`USER_ID`=u.`USER_ID` 
+    LEFT JOIN sys_role r ON ur.`ROLE_ID`= r.`ROLE_ID` WHERE u.EMAIL=#{email}
+    
+	</select>
+	<!-- 插入一个role -->
+	<insert id="insert" parameterType="graduation.design.colleges.schoolroom.help.entity.Role">
+	
+	insert into sys_role(ROLE_ID,ROLE_NAME,DES,CREATE_TIME,CREATE_BY,ORDER_NO,STATUS) 
+	values (#{id},#{roleName},#{des},#{createTime},#{createBy},#{orderNo},#{status})
+	
+	</insert>
+	<!-- 更新一个role -->
+	
+	<update id="update" parameterType="graduation.design.colleges.schoolroom.help.entity.Role">
+	
+	update sys_role set <if test="roleName != null">ROLE_NAME=#{roleName},</if>
+	                    <if test="des != null">DES=#{des},</if>
+	                    <if test="createTime != null">CREATE_TIME=#{createTime},</if>
+	                    <if test="createBy != null">CREATE_BY=#{createBy},</if>
+	                    <if test="roleNO != null">ORDER_NO=#{roleNO},</if>
+	                    <if test="status != null">STATUS=#{status}</if>
+	                     where ROLE_ID=#{id}
+	</update>
+	
+	<!-- 删除以个role -->
+	<delete id="deleteById" parameterType="string">
+	
+	delete from sys_role where ROLE_ID=#{id}
+	
+	</delete>
+	
+	<!-- 删除多条 -->
+	<delete id="delete" parameterType="string">
+	
+	delete from sys_role where ROLE_ID in 
+	<foreach collection="array" open="(" close=")" item="id" separator=",">
+	#{id}
+	</foreach>
+	</delete> 
+</mapper>

@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="graduation.design.colleges.schoolroom.help.entity.UserMapper">
+	<resultMap type="graduation.design.colleges.schoolroom.help.entity.User"
+		id="userORM">
+		<id property="id" column="USER_ID" />
+		<result property="userName" column="USER_NAME" />
+		<result property="email" column="EMAIL" />
+		<result property="mobile" column="MOBILE" />
+		<result property="password" column="PASSWORD" />
+		<result property="salt" column="SALT" />
+		<result property="ip" column="IP" />
+		<result property="imageURL" column="IMAGEURL" />
+		<result property="createTime" column="CREATE_TIME" />
+		<result property="createBy" column="CREATE_BY" />
+		<result property="orderNo" column="ORDER_NO" />
+		<result property="status" column="STATUS" />
+	</resultMap>
+	<!-- 使用继承建立表的关联 -->
+	<resultMap
+		type="graduation.design.colleges.schoolroom.help.entity.UserRoleLink"
+		id="userRoleORM" extends="userORM">
+		<id property="id" column="USER_ROLE_ID" />
+		<!-- 关联Role表 -->
+		<collection property="role"
+			ofType="graduation.design.colleges.schoolroom.help.entity.Role">
+			<id property="id" column="ROLE_ID" />
+			<result property="roleName" column="ROLE_NAME" />
+			<result property="des" column="DES" />
+			<result property="createTime" column="CREATE_TIME" />
+			<result property="createBy" column="CREATE_BY" />
+			<result property="orderNo" column="ORDER_NO" />
+			<result property="status" column="STATUS" />
+		</collection>
+	</resultMap>
+	<!-- 登录根据email获取数据操作 -->
+	<select id="login" resultMap="userORM" parameterType="string">
+
+		SELECT
+		*FROM SYS_USER WHERE EMAIL=#{email}
+
+	</select>
+	<!-- 获取所有的User -->
+	<select id="find" resultMap="userORM" parameterType="map">
+	
+		SELECT *FROM SYS_USER where 1=1
+		
+	</select>
+	<!-- 获取一条记录 -->
+	<select id="get" resultMap="userORM" parameterType="string">
+
+		SELECT *FROM SYS_USER WHERE USER_ID=#{pid}
+
+	</select>
+	
+	
+	<!-- insert User 操作 -->
+
+	<select id="insert"
+		parameterType="graduation.design.colleges.schoolroom.help.entity.User">
+		insert into SYS_USER
+		(USER_ID,USER_NAME,EMAIL,MOBILE,PASSWORD,SALT,IP,CREATE_TIME,CREATE_BY,ORDER_NO,STATUS,IMAGEURL)
+		values(#{id},#{userName},#{email},#{mobile},#{password},#{salt},#{ip},#{createTime},#{createBy},#{orderNo},#{status},#{imageURL})
+	</select>
+	<!-- insert Sys_user_role  批量插入操作-->
+	
+  <insert id="insertUserRole" parameterType="map">
+  
+	INSERT INTO sys_user_role (user_id,role_id) VALUES 
+	<foreach collection="roleIds" item="roleId"   separator=",">
+	(#{userId},#{roleId.id})
+	</foreach>
+	
+	</insert>
+	
+	<!-- 更新user信息 -->
+	<update id="update" parameterType="graduation.design.colleges.schoolroom.help.entity.User">
+	
+	  update  SYS_USER   <trim prefix="set" suffixOverrides=",">
+	                     <if test="userName != null">USER_NAME=#{userName},</if>
+	                     <if test="email != null">EMAIL=#{email},</if>
+	                     <if test="mobile != null">MOBILE=#{mobile},</if>
+	                     <if test="password != null">PASSWORD=#{password},</if>
+	                     <if test="salt != null">SALT=#{salt},</if>
+	                     <if test="ip != null">IP=#{ip},</if>
+	                     <if test="createTime != null">CREATE_TIME=#{createTime},</if>
+	                     <if test="createBy != null">CREATE_BY=#{createBy},</if>
+	                     <if test="orderNo != null">ORDER_NO=#{orderNo},</if>
+	                     <if test="status != null">STATUS=#{status},</if>
+	                     <if test="imageURL != null">IMAGEURL=#{imageURL},</if>
+	                     </trim>
+	                      where USER_ID=#{id}
+	</update>
+	
+	<!-- 更新用户角色表 -->
+	<update id="updateUserRoleById" parameterType="map">
+	
+	
+	
+	</update>
+    <!-- 删除一条 -->
+    <delete id="deleteById" parameterType="string">
+    delete from SYS_USER where USER_ID=#{id}
+    </delete>
+    
+    <!-- 删除关联表我们是通过给角色表分配资源的，所以删除以个用户只需要删除和用户关联的用户角色表 -->
+    <delete id="deleteByUserId" parameterType="string">
+    
+    DELETE FROM sys_user_role WHERE  user_id=#{id}
+    
+    </delete>
+    <!-- 批量删除 -->
+    <select id="delete" parameterType="string">
+        delete from SYS_USER where USER_ID in 
+        <foreach collection="array" open="(" close=")" separator="," item="id">
+        #{id}
+        </foreach>
+    </select>
+    <!-- 批量删除关联表 -->
+    <select id="deleteUserRole" parameterType="string">
+    
+    DELETE FROM sys_user_role WHERE  user_id in 
+    <foreach collection="array" open="(" close=")" separator="," item="id">
+    
+    #{id}
+  
+    </foreach>
+    </select>
+</mapper>

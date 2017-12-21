@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="graduation.design.colleges.schoolroom.help.entity.PermMapper">
+	<resultMap type="graduation.design.colleges.schoolroom.help.entity.Perm"
+		id="permORM">
+		<id property="id" column="PERM_ID" />
+		<result property="permName" column="PERM_NAME" />
+		<result property="des" column="DES" />
+		<result property="createTime" column="CREATE_TIME" />
+		<result property="createBy" column="CREATE_BY" />
+		<result property="orderNo" column="ORDER_NO" />
+		<result property="status" column="STATUS" />
+	</resultMap>
+	<!-- 配置和权限表之间的关联 -->
+	<resultMap
+		type="graduation.design.colleges.schoolroom.help.entity.RolePermLink"
+		id="permRoleORM" extends="permORM">
+		<id property="id" column="ROLE_PERM_ID" />
+		<collection property="role"
+			ofType="graduation.design.colleges.schoolroom.help.entity.Role">
+			<id property="id" column="ROLE_ID" />
+			<result property="roleName" column="ROLE_NAME" />
+			<result property="des" column="DES" />
+			<result property="createTime" column="CREATE_TIME" />
+			<result property="createBy" column="CREATE_BY" />
+			<result property="orderNo" column="ORDER_NO" />
+			<result property="status" column="STATUS" />
+		</collection>
+	</resultMap>
+	<!-- 配置和资源表之间的关联 -->
+	<resultMap
+		type="graduation.design.colleges.schoolroom.help.entity.PermResourceLink"
+		id="permResourceORM" extends="permORM">
+		<id property="id" column="ROLE_PERM_ID" />
+		<collection property="resource"
+			ofType="graduation.design.colleges.schoolroom.help.entity.Resource">
+			<id property="id" column="RESOURCE_ID" />
+			<result property="resourceName" column="RESOURCE_NAME" />
+			<result property="ctype" column="CTYPE" />
+			<result property="url" column="URL" />
+			<result property="parentId" column="PARENT_ID" />
+			<result property="parentIds" column="PARENT_IDS" />
+			<result property="createTime" column="CREATE_TIME" />
+			<result property="createBy" column="CREATE_BY" />
+			<result property="orderNo" column="ORDER_NO" />
+			<result property="status" column="STATUS" />
+		</collection>
+	</resultMap>
+
+	<!-- 获取所有的权限 -->
+	<select id="find" parameterType="map" resultMap="permORM">
+
+		SELECT *FROM
+		sys_perm WHERE 1=1
+
+	</select>
+
+	<!-- 获取一条 -->
+	<select id="get" parameterType="string" resultMap="permORM">
+
+		SELECT *FROM
+		sys_perm WHERE PERM_ID=#{id}
+
+	</select>
+
+	<!-- 根据roleID获取到权限 -->
+	<select id="findPerm" parameterType="string" resultMap="permORM">
+
+		SELECT DISTINCT
+		p.perm_id,p.perm_name,p.des,p.status,p.create_Time,p.create_by,p.order_no
+		FROM sys_perm p
+		LEFT JOIN sys_role_perm rp ON p.perm_id=rp.perm_id
+		LEFT JOIN sys_role r ON r.`ROLE_ID`=rp.role_id
+		WHERE r.`ROLE_ID` IN
+		<foreach collection="array" open="(" close=")" separator=","
+			item="roleId">
+
+			#{roleId}
+
+		</foreach>
+	</select>
+	<!-- 插入 -->
+	<insert id="insert"
+		parameterType="graduation.design.colleges.schoolroom.help.entity.Perm">
+
+		insert into
+		sys_perm(PERM_ID,PERM_NAME,DES,CREATE_TIME,CREATE_BY,ORDER_NO,STATUS)
+		values(#{id},#{permName},#{des},#{createTime},#{createBy},#{orderNo},#{status})
+
+	</insert>
+
+	<!-- 更新 -->
+	<update id="update"
+		parameterType="graduation.design.colleges.schoolroom.help.entity.Perm">
+
+		update sys_perm set
+		<if test="permName != null">PERM_NAME=#{permName}</if>
+		<if test="des != null">DES=#{des}</if>
+		<if test="createTime != null">CREATE_TIME=#{createTime}</if>
+		<if test="createBy != null">CREATE_BY=#{createBy}</if>
+		<if test="orderNo != null">ORDER_NO=#{orderNo}</if>
+		<if test="status != null">STATUS=#{status}</if>
+		where PERM_ID=#{id}
+	</update>
+
+	<!-- 删除一条 -->
+	<delete id="deleteById" parameterType="string">
+
+		delete from sys_perm where
+		PERM_ID=#{id}
+
+	</delete>
+
+	<!-- 删除多条 -->
+	<delete id="delete" parameterType="string">
+
+		delete from sys_perm where PERM_ID in
+		<foreach collection="array" open="(" close=")" separator=","
+			item="id">
+
+			#{id}
+
+		</foreach>
+
+	</delete>
+</mapper>
